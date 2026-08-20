@@ -1,17 +1,16 @@
-# FAESP Extensão Guaianases — GitHub Pages
+# FAESP Extensão Guaianases — Site v2
 
-Versão preparada para o endereço temporário:
+Redesign institucional e responsivo, preparado para GitHub Pages e futuro domínio próprio.
 
-`https://ruang1010.github.io/faesp-site/`
+## Estrutura
+- `/` Início
+- `/cursos/` Cursos e currículo
+- `/turmas/` Unidades, horários e pagamento
+- `/galeria/` Galeria
+- `/faq/` Perguntas frequentes
 
-Páginas:
-- Home: `/faesp-site/`
-- Cursos: `/faesp-site/cursos`
-- Turmas: `/faesp-site/turmas`
-- Galeria: `/faesp-site/galeria`
-- FAQ: `/faesp-site/faq`
+## Links críticos
+Os links de inscrição, WhatsApp e Portal do Aluno estão centralizados em `assets/site.js` no objeto `CONFIG`.
 
-Os links críticos de inscrição e WhatsApp permanecem conforme informado pelo responsável do site.
-
-> Esta build é específica para o preview do GitHub Pages no subcaminho `/faesp-site/`.
-> Para o domínio próprio, use a build de raiz preparada separadamente.
+## Manutenção
+A navegação e o rodapé também são gerados por `assets/site.js`, reduzindo duplicação.
