@@ -1,17 +1,9 @@
-# FAESP Extensão Guaianases — GitHub Pages
+# FAESP Extensão Guaianases — domínio próprio
 
-Versão preparada para o endereço temporário:
+Versão original do site preparada para:
+https://faespguaianases.com.br/
 
-`https://ruang1010.github.io/faesp-site/`
+Ajuste realizado:
+- remoção do prefixo técnico `/faesp-site` usado apenas no endereço temporário do GitHub Pages.
 
-Páginas:
-- Home: `/faesp-site/`
-- Cursos: `/faesp-site/cursos`
-- Turmas: `/faesp-site/turmas`
-- Galeria: `/faesp-site/galeria`
-- FAQ: `/faesp-site/faq`
-
-Os links críticos de inscrição e WhatsApp permanecem conforme informado pelo responsável do site.
-
-> Esta build é específica para o preview do GitHub Pages no subcaminho `/faesp-site/`.
-> Para o domínio próprio, use a build de raiz preparada separadamente.
+Nenhuma alteração visual ou de conteúdo foi realizada.
