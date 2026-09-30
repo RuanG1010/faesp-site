@@ -8,7 +8,7 @@ breadcrumbs:$("#breadcrumbs"),pageTitle:$("#pageTitle"),pageSubtitle:$("#pageSub
 uploadPanel:$("#uploadPanel"),uploadSummary:$("#uploadSummary"),uploadList:$("#uploadList"),hideUploads:$("#hideUploads"),
 loading:$("#loading"),empty:$("#empty"),foldersSection:$("#foldersSection"),folderGrid:$("#folderGrid"),folderCount:$("#folderCount"),assetsSection:$("#assetsSection"),assetGrid:$("#assetGrid"),assetCount:$("#assetCount"),
 folderDialog:$("#folderDialog"),folderForm:$("#folderForm"),folderName:$("#folderName"),cancelFolder:$("#cancelFolder"),
-adminDialog:$("#adminDialog"),closeAdmin:$("#closeAdmin"),inviteForm:$("#inviteForm"),inviteEmail:$("#inviteEmail"),inviteMessage:$("#inviteMessage"),inviteList:$("#inviteList"),
+adminDialog:$("#adminDialog"),closeAdmin:$("#closeAdmin"),inviteForm:$("#inviteForm"),inviteEmail:$("#inviteEmail"),inviteMessage:$("#inviteMessage"),inviteList:$("#inviteList"),telegramForm:$("#telegramForm"),telegramToken:$("#telegramToken"),telegramStatus:$("#telegramStatus"),telegramMessage:$("#telegramMessage"),
 confirmDialog:$("#confirmDialog"),confirmTitle:$("#confirmTitle"),confirmText:$("#confirmText"),toast:$("#toast")
 };
 
@@ -127,8 +127,50 @@ function startPolling(){if(state.poll)return;state.poll=setInterval(()=>loadLibr
 function stopPolling(){if(state.poll){clearInterval(state.poll);state.poll=null;}}
 els.jobsButton.addEventListener("click",()=>{document.querySelector(".job-box")?.scrollIntoView({behavior:"smooth",block:"center"});});
 
-els.adminButton.addEventListener("click",async()=>{els.adminDialog.showModal();await loadInvites();});
+els.adminButton.addEventListener("click",async()=>{els.adminDialog.showModal();await Promise.all([loadInvites(),loadTelegramStatus()]);});
 els.closeAdmin.addEventListener("click",()=>els.adminDialog.close());
 els.inviteForm.addEventListener("submit",async e=>{e.preventDefault();try{const r=await api("/api/admin/invite",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:els.inviteEmail.value.trim()})});els.inviteMessage.textContent=r.email+" autorizado.";els.inviteMessage.classList.remove("hidden","error");els.inviteEmail.value="";loadInvites();}catch(err){els.inviteMessage.textContent=err.message;els.inviteMessage.classList.remove("hidden");els.inviteMessage.classList.add("error");}});
 async function loadInvites(){try{const r=await api("/api/admin/invites");els.inviteList.innerHTML="";for(const x of r.emails){const d=document.createElement("div");d.className="invite-item";d.textContent=x.email;els.inviteList.append(d);}}catch(err){notify(err.message,true);}}
 init();
+
+async function loadTelegramStatus(){
+  try{
+    const r=await api("/api/admin/telegram");
+    if(r.configured){
+      els.telegramStatus.textContent="Conectado ao "+(r.channel?.title||"canal privado")+".";
+      els.telegramStatus.style.color="var(--green)";
+    }else if(r.channel){
+      els.telegramStatus.textContent="Canal encontrado. Falta conectar o token do bot.";
+      els.telegramStatus.style.color="var(--amber)";
+    }else{
+      els.telegramStatus.textContent="Telegram ainda não configurado.";
+      els.telegramStatus.style.color="var(--muted)";
+    }
+  }catch(err){
+    els.telegramStatus.textContent=err.message;
+    els.telegramStatus.style.color="var(--red)";
+  }
+}
+els.telegramForm.addEventListener("submit",async e=>{
+  e.preventDefault();
+  els.telegramMessage.classList.add("hidden");
+  const btn=els.telegramForm.querySelector("button");
+  btn.disabled=true;
+  try{
+    const r=await api("/api/admin/telegram",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({token:els.telegramToken.value.trim()})
+    });
+    els.telegramToken.value="";
+    els.telegramMessage.textContent="Bot @"+(r.bot?.username||"Telegram")+" conectado com sucesso.";
+    els.telegramMessage.classList.remove("hidden","error");
+    await loadTelegramStatus();
+  }catch(err){
+    els.telegramMessage.textContent=err.message;
+    els.telegramMessage.classList.remove("hidden");
+    els.telegramMessage.classList.add("error");
+  }finally{
+    btn.disabled=false;
+  }
+});
