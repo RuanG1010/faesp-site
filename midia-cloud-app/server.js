@@ -574,6 +574,69 @@ app.get("/api/assets/:id/download/:format", auth, async (req, res) => {
   }
 });
 
+app.get("/api/admin/telegram", auth, adminOnly, async (_req, res) => {
+  try {
+    const enc = await getSetting("telegram_bot_token_enc");
+    const chatId = await getSetting("telegram_chat_id");
+    const title = await getSetting("telegram_chat_title");
+    res.json({
+      configured: !!enc && !!chatId,
+      tokenConfigured: !!enc,
+      channel: chatId ? { id: chatId, title: title || "Canal privado" } : null
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/admin/telegram", auth, adminOnly, async (req, res) => {
+  try {
+    const token = String(req.body?.token || "").trim();
+    const optionalChatId = String(req.body?.chatId || "").trim();
+    if (!token) return res.status(400).json({ error: "Informe o token do bot." });
+
+    const meResp = await fetch("https://api.telegram.org/bot" + token + "/getMe");
+    const meBody = await meResp.json().catch(() => null);
+    if (!meResp.ok || !meBody?.ok) {
+      return res.status(400).json({ error: meBody?.description || "Token do Telegram inválido." });
+    }
+
+    await setSetting("telegram_bot_token_enc", encryptSecret(token));
+    if (optionalChatId) await setSetting("telegram_chat_id", optionalChatId);
+
+    const chatId = optionalChatId || await getSetting("telegram_chat_id");
+    if (chatId) {
+      const testResp = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "✅ Mídia Cloud Railway conectado com sucesso.",
+          disable_notification: true
+        })
+      });
+      const testBody = await testResp.json().catch(() => null);
+      if (!testResp.ok || !testBody?.ok) {
+        return res.status(400).json({
+          error: "Token válido, mas não consegui publicar no canal: " + (testBody?.description || "verifique o bot como administrador.")
+        });
+      }
+    }
+
+    res.json({
+      ok: true,
+      bot: {
+        id: meBody.result.id,
+        username: meBody.result.username,
+        name: meBody.result.first_name
+      },
+      channelConfigured: !!chatId
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post("/api/admin/invite", auth, adminOnly, async (req, res) => {
   const email = String(req.body?.email || "").trim().toLowerCase();
   if (!/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ error: "E-mail inválido." });
