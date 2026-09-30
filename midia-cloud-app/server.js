@@ -834,7 +834,7 @@ setInterval(() => {
 }, 2500);
 
 app.use(express.static(path.join(process.cwd(), "public")));
-app.get("*", (_req, res) => res.sendFile(path.join(process.cwd(), "public", "index.html")));
+app.use((_req, res) => res.sendFile(path.join(process.cwd(), "public", "index.html")));
 
 await initSchema();
 
